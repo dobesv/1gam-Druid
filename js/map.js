@@ -79,21 +79,70 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
         }
       } else if(pc.device.lastFrame >= critter.nextMoveTime) {
         critter.moving = true;
-        critter.movingTo.x = Math.floor(critter.x) + Math.random();
-        critter.movingTo.y = Math.floor(critter.y) + Math.random();
+        critter.movingTo.x = Math.round(critter.x) + (Math.random()*0.9) - 0.45;
+        critter.movingTo.y = Math.round(critter.y) + (Math.random()*0.9) - 0.45;
       }
     }, this);
   },
 
-  /**
-   * Spawn dung where appropriate
-   */
-  spawnDung:function() {
+  spawnDung:function(x,y) {
+    this.spawnItem(ItemType.DUNG, 'dung', x, y);
+  },
 
+  spawnItem:function(type,imgId,x,y) {
+    var item = {
+      type:type,
+      image:getImage(imgId),
+      x:x,
+      y:y,
+      spawnTime:Date.now(),
+      dropTime:Date.now()
+    };
+    this.items.push(item);
+    return item;
+  },
+
+  haveItemOnTile:function(type, x, y) {
+    x = Math.round(x);
+    y = Math.round(y);
+    var items = this.items;
+    for(var i=0; i < items.length; i++) {
+      var item = items[i];
+      if(item.type == type && Math.round(item.x) == x && Math.round(item.y) == y) {
+        return true;
+      }
+    }
+    return false;
+  },
+
+  haveDungOnTile:function(x, y) {
+    return this.haveItemOnTile(ItemType.DUNG, x, y);
+  },
+
+  /**
+   * Spawn manure where appropriate
+   */
+  dropDungFromGrazers:function() {
+    var spawnRate = 10.0;
+    this.critters.forEach(function(critter) {
+      if(critter.type == CritterType.GRAZER) {
+        // Chance of spawning manure this round is equal to the
+        // length of the last frame (s) / average spawn rate (s/unit) = num units to spawn this frame
+        var r = Math.random();
+        if(r < (pc.device.elapsed / (spawnRate * 1000))) {
+          if(!this.haveDungOnTile(critter.x, critter.y)) {
+            //console.log('Dropping dung ...', r, spawnRate, pc.device.elapsed / spawnRate * 1000);
+            this.spawnDung(critter.x-0.1, critter.y-0.1);
+          }
+        }
+      }
+    }, this);
   },
 
   process:function() {
+    this.dropDungFromGrazers();
     this.moveCritters();
+
   },
 
   /**

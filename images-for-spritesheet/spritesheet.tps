@@ -146,54 +146,9 @@
         </struct>
         <key>fileList</key>
         <array>
-            <filename>animal-cat.png</filename>
-            <filename>animal-cow.png</filename>
-            <filename>animal-rat.png</filename>
-            <filename>animal-sheep.png</filename>
-            <filename>but_b_down.png</filename>
-            <filename>but_b_hover.png</filename>
-            <filename>but_b_up.png</filename>
-            <filename>but_g_down.png</filename>
-            <filename>but_g_hover.png</filename>
-            <filename>but_g_up.png</filename>
-            <filename>but_map_down.png</filename>
-            <filename>but_map_hover.png</filename>
-            <filename>but_map_up.png</filename>
-            <filename>but_r_down.png</filename>
-            <filename>but_r_hover.png</filename>
-            <filename>but_r_up.png</filename>
-            <filename>but_y_down.png</filename>
-            <filename>but_y_hover.png</filename>
-            <filename>but_y_up.png</filename>
-            <filename>icon-bio-hazard.png</filename>
-            <filename>icon-radiation.png</filename>
-            <filename>robot.png</filename>
-            <filename>status-bar-bottom.png</filename>
-            <filename>status-bar-top.png</filename>
-            <filename>structure-atmosphere.png</filename>
-            <filename>structure-base.png</filename>
-            <filename>structure-farm.png</filename>
-            <filename>structure-greenhouse.png</filename>
-            <filename>structure-hut.png</filename>
-            <filename>structure-power.png</filename>
-            <filename>structure-recycle.png</filename>
-            <filename>structure-scafold.png</filename>
-            <filename>structure-water-collector.png</filename>
-            <filename>structure-water-purifier.png</filename>
-            <filename>numbers.png</filename>
-            <filename>plant-shade.png</filename>
-            <filename>plant-water.png</filename>
-            <filename>predator.png</filename>
-            <filename>sack.png</filename>
-            <filename>seed-grass.png</filename>
-            <filename>seed-shade.png</filename>
-            <filename>seed-water.png</filename>
-            <filename>druid-cauldron.png</filename>
             <filename>dung.png</filename>
-            <filename>energy-bar.png</filename>
-            <filename>energy-bar-fill.png</filename>
-            <filename>inventory-bar.png</filename>
             <filename>base-tree.png</filename>
+            <filename>grazer.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>

@@ -10,6 +10,10 @@ var CritterType = {
   PREDATOR:2
 };
 
+var ItemType = {
+  DUNG:1,
+  GRASS_SEED:2
+};
 
 
 
