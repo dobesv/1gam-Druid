@@ -1,3 +1,9 @@
+
+var Tiles = {
+  GRASS: [13],
+  SAND: [0]
+}
+
 GameMap = pc.TileMap.extend("GameMap", {}, {
 
   critters:[],
@@ -9,10 +15,10 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
   },
 
   generate:function() {
-    this._super(1);
+    this._super(Tiles.SAND[0]);
     var cx = Math.floor(this.tilesWide/2);
     var cy = Math.floor(this.tilesHigh/2);
-    this.paint(cx-2,cy-2,5,5,4);
+    this.paint(cx-2,cy-2,5,5,Tiles.GRASS[0]);
     this.critters.length = 0;
     this.trees.length = 0;
     this.items.length = 0;
