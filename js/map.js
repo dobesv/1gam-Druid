@@ -1,6 +1,7 @@
 
 var Tiles = {
-  GRASS: [13],
+  GRASS: [18],
+  DEEP_GRASS: [19],
   SAND: [0]
 }
 
