@@ -1,9 +1,4 @@
 
-var Tiles = {
-  GRASS: [18],
-  DEEP_GRASS: [19],
-  SAND: [0]
-}
 
 GameMap = pc.TileMap.extend("GameMap", {}, {
 
@@ -13,6 +8,13 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
 
   init:function(tileSets) {
     this._super(tileSets, 75, 75);
+
+    for(var k in TileType) {
+      var type = TileType[k];
+      var tileIds = Tiles[k];
+      if(tileIds) tileIds.forEach(function(tileId) {this.getTileSetForTileId(tileId).addProperty(tileId+1, 'type', type); }, this)
+      Tiles[type] = tileIds;
+    }
   },
 
   generate:function() {
@@ -23,9 +25,9 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
     this.critters.length = 0;
     this.trees.length = 0;
     this.items.length = 0;
-    this.spawnGrazer(cx+1, cy+1);
-    this.spawnGrazer(cx+1, cy-1);
-    this.spawnGrazer(cx-1, cy+1);
+    this.spawnGrazer(cx+1.1, cy+1.5);
+    this.spawnGrazer(cx+1.2, cy-0.4);
+    this.spawnGrazer(cx-0.7, cy+1.2);
     this.spawnHomeTree(cx,cy);
   },
 
@@ -40,6 +42,7 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
     var critter = {
       type: type,
       image: image,
+      remove: false,
       x: x, y: y,
 
       // Random movement around the tile
@@ -51,6 +54,16 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
     };
     this.critters.push(critter);
     return critter;
+  },
+
+  getTileType:function(x,y) {
+    var tileId = this.getTile(Math.floor(x), Math.floor(y))+1;
+    if(tileId == 0)
+      return '?';
+    var tileSet = this.getTileSetForTileId(tileId);
+    var properties = tileSet.getProperties(tileId);
+    var type = properties && properties.get('type');
+    return type || '?';
   },
 
   /**
@@ -86,8 +99,8 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
         }
       } else if(pc.device.lastFrame >= critter.nextMoveTime) {
         critter.moving = true;
-        critter.movingTo.x = Math.round(critter.x) + (Math.random()*0.9) - 0.45;
-        critter.movingTo.y = Math.round(critter.y) + (Math.random()*0.9) - 0.45;
+        critter.movingTo.x = Math.floor(critter.x) + (Math.random()*0.9) + 0.05;
+        critter.movingTo.y = Math.floor(critter.y) + (Math.random()*0.9) + 0.05;
       }
     }, this);
   },
@@ -100,26 +113,30 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
     var item = {
       type:type,
       image:getImage(imgId),
+      remove:false,
       x:x,
       y:y,
-      spawnTime:Date.now(),
-      dropTime:Date.now()
+      spawnTime:pc.device.lastFrame,
+      dropTime:pc.device.lastFrame
     };
     this.items.push(item);
     return item;
   },
 
-  haveItemOnTile:function(type, x, y) {
-    x = Math.round(x);
-    y = Math.round(y);
-    var items = this.items;
-    for(var i=0; i < items.length; i++) {
-      var item = items[i];
-      if(item.type == type && Math.round(item.x) == x && Math.round(item.y) == y) {
+  haveObjectOnTile:function(list, type, x, y) {
+    x = Math.floor(x);
+    y = Math.floor(y);
+    for(var i=0; i < list.length; i++) {
+      var item = list[i];
+      if(item.type == type && Math.floor(item.x) == x && Math.floor(item.y) == y) {
         return true;
       }
     }
     return false;
+  },
+
+  haveItemOnTile:function(type, x, y) {
+    return this.haveObjectOnTile(this.items, type, x, y);
   },
 
   haveDungOnTile:function(x, y) {
@@ -129,16 +146,15 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
   /**
    * Spawn manure where appropriate
    */
-  dropDungFromGrazers:function() {
-    var spawnRate = 10.0;
+  applyCritterEffects:function() {
     this.critters.forEach(function(critter) {
       if(critter.type == CritterType.GRAZER) {
         // Chance of spawning manure this round is equal to the
         // length of the last frame (s) / average spawn rate (s/unit) = num units to spawn this frame
-        var r = Math.random();
-        if(r < (pc.device.elapsed / (spawnRate * 1000))) {
-          if(!this.haveDungOnTile(critter.x, critter.y)) {
-            //console.log('Dropping dung ...', r, spawnRate, pc.device.elapsed / spawnRate * 1000);
+        if(!this.haveDungOnTile(critter.x, critter.y)) {
+          var r = Math.random();
+          if(r < (pc.device.elapsed / (DUNG_SPAWN_RATE * 1000))) {
+            //console.log('Dropping dung ...', r, DUNG_SPAWN_RATE, pc.device.elapsed / DUNG_SPAWN_RATE * 1000);
             this.spawnDung(critter.x-0.1, critter.y-0.1);
           }
         }
@@ -146,10 +162,90 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
     }, this);
   },
 
-  process:function() {
-    this.dropDungFromGrazers();
-    this.moveCritters();
+  setTileType:function(x,y,type) {
+    this.setTile(Math.floor(x), Math.floor(y), Tiles[type]);
+  },
 
+  markForRemoval: function(obj) {
+    obj.remove = true;
+  },
+
+  applyRemovals: function (lst) {
+    var d=0;
+    for(var i=0; i < lst.length; i++) {
+      var obj = lst[i];
+      if(! obj.remove) {
+        if(d < i) lst[d] = obj;
+        d++;
+      }
+    }
+    lst.length = d;
+  },
+
+  /**
+   * Apply the effects of items - manure fertilizes the ground or kills grass, for example
+   */
+  applyItemEffects:function() {
+    this.items.forEach(function(item) {
+      var sittingTime = pc.device.lastFrame - item.dropTime;
+      var tileType = this.getTileType(item.x, item.y);
+      switch(item.type) {
+        case ItemType.DUNG:
+          // If on sand, convert to fertile soil.  If on grass, convert to greener grass.  If on greener grass ... ?
+          switch(tileType) {
+            case TileType.GRASS:
+                if(sittingTime > 10000) {
+                  this.setTileType(item.x, item.y, TileType.DEEP_GRASS);
+                  this.markForRemoval(item); // Mark for removal
+                }
+              break;
+
+            case TileType.SAND:
+                if(sittingTime > 10000) {
+                  this.setTileType(item.x, item.y, TileType.DIRT);
+                  this.markForRemoval(item);
+                }
+              break;
+            default:
+              if(sittingTime > 60000) {
+                this.markForRemoval(item); // expired
+              }
+              break;
+          }
+          break;
+
+        case ItemType.GRASS_SEED:
+          // If we're on fertile ground, gradually convert to grass
+          switch(tileType) {
+            case TileType.DIRT:
+              if(sittingTime > 10000) {
+                this.setTileType(item.x, item.y, TileType.GRASS);
+                this.markForRemoval(item);
+              }
+              break;
+            default:
+              if(sittingTime > 60000) {
+                this.markForRemoval(item); // expired
+              }
+              break;
+          }
+          break;
+      }
+    }, this);
+  },
+
+  applyTreeEffects:function() {
+
+  },
+
+  process:function() {
+    this.applyCritterEffects();
+    this.applyItemEffects();
+    this.applyTreeEffects();
+    this.moveCritters();
+    this.applyRemovals(this.critters);
+    this.applyRemovals(this.items);
+    this.applyRemovals(this.trees);
   },
 
   /**
