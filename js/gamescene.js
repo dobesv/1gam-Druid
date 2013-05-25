@@ -15,7 +15,7 @@ GameScene = pc.Scene.extend('GameScene',
         var y = this.game.canvasY(pos.y);
         if(actionName == 'press') {
           // TODO Check if they are dragging something else ...
-          var objectToDrag = this.mapLayer.findObjectOnScreen(x, y);
+          var objectToDrag = this.mapLayer.findObjectOnScreen(x, y, function(obj) { return 'dragging' in obj; });
           if(objectToDrag == null) {
             this.draggingMap = true;
             this.draggingMapX = x + this.mapLayer.origin.x;

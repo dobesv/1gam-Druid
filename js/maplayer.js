@@ -18,10 +18,10 @@ var MapLayer = pc.IsoTileLayer.extend("MapLayer", {}, {
     this.setOrigin(0, Math.round((mapHeight-screenHeight)/2));
   },
 
-  findObjectOnScreen:function(x,y) {
+  findObjectOnScreen:function(x,y,pred) {
     for(var i=0; i < this.drawList.length; i++) {
       var obj = this.drawList[i];
-      if(x >= obj.image.x && x < (obj.image.x + obj.image.width)) {
+      if(x >= obj.image.x && x < (obj.image.x + obj.image.width) && (!pred || pred(obj))) {
         return obj;
       }
     }
