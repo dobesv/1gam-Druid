@@ -18,36 +18,47 @@ var MapLayer = pc.IsoTileLayer.extend("MapLayer", {}, {
     this.setOrigin(0, Math.round((mapHeight-screenHeight)/2));
   },
 
+  findObjectOnScreen:function(x,y) {
+    for(var i=0; i < this.drawList.length; i++) {
+      var obj = this.drawList[i];
+      if(x >= obj.image.x && x < (obj.image.x + obj.image.width)) {
+        return obj;
+      }
+    }
+  },
 
   draw:function() {
     this._super();
     var drawList = this.drawList;
     var drawListLength = 0;
-    var addToDrawList = function(x,y,image,vanchor) {
-      var screenX = Math.round(this.tileScreenX(x, y) + (this.tileMap.tileWidth - image.width) / 2);
+    var addToDrawList = function(obj,vanchor) {
+      var x = obj.x;
+      var y = obj.y;
+      var image = obj.image;
+      var screenX = image.x = Math.round(this.tileScreenX(x, y) + (this.tileMap.tileWidth - image.width) / 2);
       var mapY = this.tileScreenY(x, y);
-      var screenY = Math.round(mapY + this.tileMap.tileHeight / 2 - (image.height * vanchor));
+      var screenY = image.y = Math.round(mapY + this.tileMap.tileHeight / 2 - (image.height * vanchor));
       if(screenX + image.width < 0 || screenX > this.scene.viewPort.w ||
          screenY + image.height < 0 || screenY > this.scene.viewPort.h) {
         // Off-screen
         return;
       }
-      var elt = {x:screenX,y:screenY,image:image,mapY:mapY};
+      obj.mapY = mapY;
       if(drawListLength == drawList.length) {
-        drawList.push(elt);
+        drawList.push(obj);
       } else {
-        drawList[drawListLength] = elt;
+        drawList[drawListLength] = obj;
       }
       drawListLength++;
     }.bind(this);
     var addObjectToDrawList = function(obj) {
-      addToDrawList(obj.x, obj.y, obj.image, 0.5);
+      addToDrawList(obj, 0.5);
     };
     this.tileMap.critters.forEach(addObjectToDrawList, this);
     this.tileMap.items.forEach(addObjectToDrawList, this);
 
     this.tileMap.trees.forEach(function(obj) {
-      addToDrawList(obj.x, obj.y, obj.image, 1);
+      addToDrawList(obj, 1);
     }, this);
 
     drawList.length = drawListLength;
@@ -55,7 +66,7 @@ var MapLayer = pc.IsoTileLayer.extend("MapLayer", {}, {
       return a.mapY - b.mapY;
     });
     drawList.forEach(function(elt) {
-      elt.image.draw(pc.device.ctx, elt.x, elt.y);
+      elt.image.draw(pc.device.ctx, elt.image.x, elt.image.y);
     });
   }
 });

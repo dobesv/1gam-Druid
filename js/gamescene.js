@@ -7,57 +7,30 @@ GameScene = pc.Scene.extend('GameScene',
 
       mapLayer:null,
       map:null,
+      draggingObject:null,
 
       onAction:function(actionName, event, pos) {
         console.log("Action: "+actionName+' at '+pos.x+","+pos.y+" (world mouse xy: "+this.game.canvasMouseX()+","+this.game.canvasMouseY()+")  (world xy: "+this.game.canvasX(pos.x)+","+this.game.canvasY(pos.y)+")");
+        var x = this.game.canvasX(pos.x);
+        var y = this.game.canvasY(pos.y);
         if(actionName == 'press') {
           // TODO Check if they are dragging something else ...
-
-          this.draggingMap = true;
-          this.draggingMapX = this.game.canvasMouseX() + this.mapLayer.origin.x;
-          this.draggingMapY = this.game.canvasMouseY() + this.mapLayer.origin.y;
-          //console.log('Dragging the map ... '+this.draggingMapX+","+this.draggingMapY+" origin is "+this.mapLayer.origin.x+","+this.mapLayer.origin.y);
+          var objectToDrag = this.mapLayer.findObjectOnScreen(x, y);
+          if(objectToDrag == null) {
+            this.draggingMap = true;
+            this.draggingMapX = x + this.mapLayer.origin.x;
+            this.draggingMapY = y + this.mapLayer.origin.y;
+            //console.log('Dragging the map ... '+this.draggingMapX+","+this.draggingMapY+" origin is "+this.mapLayer.origin.x+","+this.mapLayer.origin.y);
+          } else {
+            this.draggingObject = objectToDrag;
+          }
         } else if(actionName == 'release') {
           this.draggingMap = false;
+          if(this.draggingObject) {
+            this.dragItemTo(this.draggingObject, x, y, false);
+          }
+          this.draggingObject = null;
         }
-//        if(this.game.levelStarted == false)
-//          return;
-//
-//        var self = this;
-//        var whatIsUnderTheMouse = function whatIsUnderTheMouse() {
-//          var x = this.game.canvasX(pos.x);
-//          var y = this.game.canvasY(pos.y);
-//          //console.log(actionName + ' for scene at '+x+","+y);
-//          var foundPivot = null;
-//          var grid = self.grid;
-//          self.grid.pivots.forEach(function(pivot) {
-//            var leftX = grid.columnX(pivot.column)-filterOffset*grid.scale;
-//            var rightX = grid.columnX(pivot.column+1)+filterOffset*grid.scale;
-//            var topY = grid.rowY(pivot.row)-filterOffset*grid.scale;
-//            var bottomY = grid.rowY(pivot.row+1)+filterOffset*grid.scale;
-//            if(x >= leftX && x <= rightX && y >= topY && y <= bottomY) {
-//              foundPivot = pivot;
-//            }
-//          });
-//          return foundPivot;
-//        }.bind(this);
-//        if(actionName == 'press') {
-//          this.pressed = whatIsUnderTheMouse();
-//        } else if(actionName == 'release') {
-//          if(!this.pressed)
-//            return;
-//          var onWhat = whatIsUnderTheMouse();
-//          if(onWhat === this.pressed) {
-//            onWhat.handleClick();
-//            event.preventDefault();
-//          }
-//        } else if(actionName == 'touch') {
-//          var onWhat = whatIsUnderTheMouse();
-//          if(onWhat) {
-//            onWhat.handleClick();
-//            event.preventDefault();
-//          }
-//        }
       },
 
       init:function (game)
@@ -87,10 +60,23 @@ GameScene = pc.Scene.extend('GameScene',
           if(this.mapLayer.setOrigin(this.draggingMapX - mx, this.draggingMapY - my)) {
             //console.log('changed origin by dragging: '+this.mapLayer.origin.x+","+this.mapLayer.origin.y);
           }
+        } else if(this.draggingObject) {
+          // TODO Maybe this should be tied to mousemove, that'd make it easier to tie to touch gestures later
+          this.dragItemTo(this.draggingObject, this.game.canvasMouseX(), this.game.canvasMouseY(), true);
         }
 
         this.map.process();
       },
+
+      dragItemTo: function(item, x, y, dragging) {
+        var tileX = this.mapLayer.screenTileX(x,y);
+        var tileY = this.mapLayer.screenTileY(x,y);
+        var xx = this.mapLayer.tileScreenX(tileX, tileY);
+        var yy = this.mapLayer.tileScreenY(tileX, tileY);
+        console.log('Drag item to '+x+','+y+' --> '+tileX+','+tileY+" --> "+xx+','+yy);
+        this.map.dragItemTo(item, tileX, tileY, dragging);
+      },
+
       onResize:function (width, height) {
         // pretend its 1024,768 because of our scaling hack
         this._super(1024,768);

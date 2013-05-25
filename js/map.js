@@ -44,6 +44,7 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
       image: image,
       remove: false,
       x: x, y: y,
+      dragging: true,
 
       // Random movement around the tile
       moveFrequency:moveFrequency,
@@ -116,6 +117,7 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
       remove:false,
       x:x,
       y:y,
+      dragging: true,
       spawnTime:pc.device.lastFrame,
       dropTime:pc.device.lastFrame
     };
@@ -271,5 +273,13 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
    */
   spawnHomeTree:function(x,y) {
     this.spawnTree(TreeType.HOME, 'base-tree', x, y);
+  },
+
+  dragItemTo:function(item,x,y,dragging) {
+    item.dragging = dragging;
+    item.x = x;
+    item.y = y;
+    item.dropTime = pc.device.lastFrame;
   }
+
 });
