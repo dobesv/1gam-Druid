@@ -19,11 +19,22 @@ var MapLayer = pc.IsoTileLayer.extend("MapLayer", {}, {
   },
 
   findObjectOnScreen:function(x,y,pred) {
+    var choices = [];
     for(var i=0; i < this.drawList.length; i++) {
       var obj = this.drawList[i];
       if(x >= obj.image.x && x < (obj.image.x + obj.image.width) && (!pred || pred(obj))) {
-        return obj;
+        choices.push(obj);
       }
+    }
+    choices.sort(function(a,b) {
+      var aDistSqr = pc.Math.sqr(a.image.x + a.image.x/2 - x)+pc.Math.sqr(a.y + a.image.height/2 - y);
+      var bDistSqr = pc.Math.sqr(b.image.x + b.image.x/2 - x)+pc.Math.sqr(b.y + b.image.height/2 - y);
+      return aDistSqr - bDistSqr;
+    });
+    if(choices.length==0) {
+      return null;
+    } else {
+      return choices[0];
     }
   },
 
