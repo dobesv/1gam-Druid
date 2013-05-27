@@ -22,7 +22,9 @@ var MapLayer = pc.IsoTileLayer.extend("MapLayer", {}, {
     var choices = [];
     for(var i=0; i < this.drawList.length; i++) {
       var obj = this.drawList[i];
-      if(x >= obj.image.x && x < (obj.image.x + obj.image.width) && (!pred || pred(obj))) {
+      if(x >= obj.image.x && x < (obj.image.x + obj.image.width) &&
+         y >= obj.image.y && y < (obj.image.y + obj.image.height) &&
+          (!pred || pred(obj))) {
         choices.push(obj);
       }
     }
