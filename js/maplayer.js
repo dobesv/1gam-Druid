@@ -66,7 +66,14 @@ var MapLayer = pc.IsoTileLayer.extend("MapLayer", {}, {
       return a.mapY - b.mapY;
     });
     drawList.forEach(function(elt) {
-      elt.image.draw(pc.device.ctx, elt.image.x, elt.image.y);
+
+      var ready = !('readyTime' in elt) || pc.device.lastFrame > elt.readyTime;
+      var alpha = ready ? 1 : 0.25 + 0.75*((pc.device.lastFrame - elt.spawnTime) / (elt.readyTime - elt.spawnTime));
+      elt.image.setAlpha(alpha);
+      elt.image.setScale(alpha,alpha);
+      var x = elt.image.x + (1-alpha)*0.5*elt.image.width;
+      var y = elt.image.y + (1-alpha)*0.5*elt.image.height;
+      elt.image.draw(pc.device.ctx, x, y);
     });
   }
 });

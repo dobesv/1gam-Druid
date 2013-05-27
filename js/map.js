@@ -58,12 +58,15 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
   },
 
   getTileType:function(x,y) {
-    var tileId = this.getTile(Math.floor(x), Math.floor(y))+1;
-    if(tileId == 0)
+    var tileId = parseInt(this.getTile(Math.floor(x), Math.floor(y)))+1;
+    if(tileId == 0) {
       return '?';
+    }
     var tileSet = this.getTileSetForTileId(tileId);
     var properties = tileSet.getProperties(tileId);
     var type = properties && properties.get('type');
+    if(!type)
+      console.log('No type for tile ID '+tileId);
     return type || '?';
   },
 
@@ -106,11 +109,15 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
     }, this);
   },
 
-  spawnDung:function(x,y) {
-    this.spawnItem(ItemType.DUNG, 'dung', x, y);
+  spawnDung:function(x,y,readyTime) {
+    return this.spawnItem(ItemType.DUNG, 'dung', x, y, readyTime);
   },
 
-  spawnItem:function(type,imgId,x,y) {
+  spawnGrassSeed:function(x,y,readyTime) {
+    return this.spawnItem(ItemType.GRASS_SEED, 'seed-grass', x, y, readyTime);
+  },
+
+  spawnItem:function(type,imgId,x,y,readyTime) {
     var item = {
       type:type,
       image:getImage(imgId),
@@ -119,7 +126,8 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
       y:y,
       dragging: true,
       spawnTime:pc.device.lastFrame,
-      dropTime:pc.device.lastFrame
+      dropTime:pc.device.lastFrame,
+      readyTime:pc.checked(readyTime, pc.device.lastFrame)
     };
     this.items.push(item);
     return item;
@@ -145,6 +153,16 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
     return this.haveItemOnTile(ItemType.DUNG, x, y);
   },
 
+  haveGrassOnTile:function(x, y) {
+    switch(this.getTileType(x, y)) {
+      case TileType.GRASS:
+      case TileType.DEEP_GRASS:
+        return true;
+      default:
+        return false;
+    }
+  },
+
   /**
    * Spawn manure where appropriate
    */
@@ -153,11 +171,11 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
       if(critter.type == CritterType.GRAZER) {
         // Chance of spawning manure this round is equal to the
         // length of the last frame (s) / average spawn rate (s/unit) = num units to spawn this frame
-        if(!this.haveDungOnTile(critter.x, critter.y)) {
+        if(this.haveGrassOnTile(critter.x, critter.y) && !this.haveDungOnTile(critter.x, critter.y)) {
           var r = Math.random();
           if(r < (pc.device.elapsed / (DUNG_SPAWN_RATE * 1000))) {
             //console.log('Dropping dung ...', r, DUNG_SPAWN_RATE, pc.device.elapsed / DUNG_SPAWN_RATE * 1000);
-            this.spawnDung(critter.x-0.1, critter.y-0.1);
+            this.spawnDung(critter.x-0.1, critter.y-0.1, pc.device.lastFrame + 5000);
           }
         }
       }
@@ -189,6 +207,9 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
    */
   applyItemEffects:function() {
     this.items.forEach(function(item) {
+      // Skip items that are not "ready"
+      if(item.readyTime > pc.device.lastFrame)
+        return;
       var sittingTime = pc.device.lastFrame - item.dropTime;
       var tileType = this.getTileType(item.x, item.y);
       switch(item.type) {
@@ -209,7 +230,7 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
                 }
               break;
             default:
-              if(sittingTime > 60000) {
+              if(sittingTime > 180000) {
                 this.markForRemoval(item); // expired
               }
               break;
@@ -225,8 +246,14 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
                 this.markForRemoval(item);
               }
               break;
+            case TileType.SAND:
+              if(sittingTime > 5000) {
+                this.markForRemoval(item); // expired
+              }
+              break;
+
             default:
-              if(sittingTime > 60000) {
+              if(sittingTime > 300000) {
                 this.markForRemoval(item); // expired
               }
               break;
@@ -237,7 +264,23 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
   },
 
   applyTreeEffects:function() {
-
+    this.trees.forEach(function(tree) {
+      switch(tree.type) {
+        case TreeType.HOME:
+          for(var dx=-2; dx <= 3; dx++) {
+            for(var dy=-2; dy <= 3; dy++) {
+              var shadeX = Math.floor(tree.x + dx);
+              var shadeY = Math.floor(tree.y + dy);
+              var shadedTileType = this.getTileType(shadeX, shadeY);
+              if(shadedTileType == TileType.DEEP_GRASS &&
+                  !this.haveItemOnTile(ItemType.GRASS_SEED, shadeX, shadeY)) {
+                this.spawnGrassSeed(shadeX + Math.random()*0.99, shadeY + Math.random()*0.99, pc.device.lastFrame + 30000);
+              }
+            }
+          }
+          break;
+      }
+    },this);
   },
 
   process:function() {
@@ -280,6 +323,10 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
     item.x = x;
     item.y = y;
     item.dropTime = pc.device.lastFrame;
+    if('moving' in item) {
+      // Reset movement state
+      item.moving = false;
+    }
   }
 
 });

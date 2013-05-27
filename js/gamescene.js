@@ -15,7 +15,10 @@ GameScene = pc.Scene.extend('GameScene',
         var y = this.game.canvasY(pos.y);
         if(actionName == 'press') {
           // TODO Check if they are dragging something else ...
-          var objectToDrag = this.mapLayer.findObjectOnScreen(x, y, function(obj) { return 'dragging' in obj; });
+          var canDrag = function(obj) {
+            return 'dragging' in obj &&
+                (!('readyTime' in obj) || obj.readyTime <= pc.device.lastFrame); }
+          var objectToDrag = this.mapLayer.findObjectOnScreen(x, y, canDrag);
           if(objectToDrag == null) {
             this.draggingMap = true;
             this.draggingMapX = x + this.mapLayer.origin.x;
@@ -73,7 +76,7 @@ GameScene = pc.Scene.extend('GameScene',
         var tileY = this.mapLayer.screenTileY(x,y);
         var xx = this.mapLayer.tileScreenX(tileX, tileY);
         var yy = this.mapLayer.tileScreenY(tileX, tileY);
-        console.log('Drag item to '+x+','+y+' --> '+tileX+','+tileY+" --> "+xx+','+yy);
+        //console.log('Drag item to '+x+','+y+' --> '+tileX+','+tileY+" --> "+xx+','+yy);
         this.map.dragItemTo(item, tileX, tileY, dragging);
       },
 
