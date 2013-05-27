@@ -47,7 +47,7 @@ TheGame = pc.Game.extend('TheGame',
 //        loadSound('level_complete_sound');
 //        loadSound('beep');
 //        loadSound('pivot_sound', 5);
-        loadSound('music');
+//        loadSound('music');
 
         // fire up the loader (with a callback once done)
         pc.device.loader.start(this.onLoading.bind(this), this.onLoaded.bind(this));
@@ -98,8 +98,8 @@ TheGame = pc.Game.extend('TheGame',
         this.gameScene = new GameScene(this);
         this.addScene(this.gameScene);
 
-        if(this.musicPlaying && !this.muted)
-          this.startMusic();
+//        if(this.musicPlaying && !this.muted)
+//          this.startMusic();
 
         pc.device.input.bindAction(this, 'cheat', 'F8');
         pc.device.input.bindAction(this, 'toggleMusic', 'M');
