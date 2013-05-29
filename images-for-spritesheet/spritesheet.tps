@@ -149,6 +149,7 @@
             <filename>dung.png</filename>
             <filename>base-tree.png</filename>
             <filename>grazer.png</filename>
+            <filename>seed-grass.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>
