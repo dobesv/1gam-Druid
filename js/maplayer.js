@@ -78,15 +78,32 @@ var MapLayer = pc.IsoTileLayer.extend("MapLayer", {}, {
     drawList.sort(function(a,b) {
       return a.mapY - b.mapY;
     });
-    drawList.forEach(function(elt) {
+    var mouseX = pc.device.game.canvasMouseX();
+    var mouseY = pc.device.game.canvasMouseY();
+    var hoverOn = null;
+    for(var i=0; i < drawList.length; i++) {
+      var obj = drawList[i];
+      if(('hoverImage' in obj || 'dragging' in obj) && (!('readyTime' in obj) || pc.device.lastFrame > obj.readyTime) &&
+         mouseX >= obj.image.x && mouseX < obj.image.x + obj.image.width &&
+         mouseY >= obj.image.y && mouseY < obj.image.y + obj.image.width) {
+        hoverOn = obj;
+        break;
+      }
+    }
 
+    drawList.forEach(function(elt) {
       var ready = !('readyTime' in elt) || pc.device.lastFrame > elt.readyTime;
       var alpha = ready ? 1 : 0.25 + 0.75*((pc.device.lastFrame - elt.spawnTime) / (elt.readyTime - elt.spawnTime));
-      elt.image.setAlpha(alpha);
-      elt.image.setScale(alpha,alpha);
+      var image = elt.image;
+
+      if(hoverOn == elt && 'hoverImage' in elt) image = elt.hoverImage;
+      else if(!ready && 'growingImage' in elt) image = elt.growingImage;
+
+      image.setAlpha(alpha);
+      image.setScale(alpha,alpha);
       var x = elt.image.x + (1-alpha)*0.5*elt.image.width;
       var y = elt.image.y + (1-alpha)*0.5*elt.image.height;
-      elt.image.draw(pc.device.ctx, x, y);
+      image.draw(pc.device.ctx, x, y);
     });
   }
 });

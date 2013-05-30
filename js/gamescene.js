@@ -78,7 +78,7 @@ GameScene = pc.Scene.extend('GameScene',
         var tileY = this.mapLayer.screenTileY(x,y);
         var xx = this.mapLayer.tileScreenX(tileX, tileY);
         var yy = this.mapLayer.tileScreenY(tileX, tileY);
-        //console.log('Drag item to '+x+','+y+' --> '+tileX+','+tileY+" --> "+xx+','+yy);
+        console.log('Drag item to '+x+','+y+' --> '+tileX+','+tileY+" --> "+xx+','+yy);
         this.map.dragItemTo(item, tileX, tileY, dragging);
       },
 
