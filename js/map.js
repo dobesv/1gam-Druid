@@ -217,20 +217,20 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
           // If on sand, convert to fertile soil.  If on grass, convert to greener grass.  If on greener grass ... ?
           switch(tileType) {
             case TileType.GRASS:
-                if(sittingTime > 10000) {
+                if(sittingTime > (GRASS_FERTILIZATION_TIME*1000)) {
                   this.setTileType(item.x, item.y, TileType.DEEP_GRASS);
                   this.markForRemoval(item); // Mark for removal
                 }
               break;
 
             case TileType.SAND:
-                if(sittingTime > 10000) {
+                if(sittingTime > (SAND_FERTILIZATION_TIME * 1000)) {
                   this.setTileType(item.x, item.y, TileType.DIRT);
                   this.markForRemoval(item);
                 }
               break;
             default:
-              if(sittingTime > 180000) {
+              if(sittingTime > DUNG_EXPIRY_TIME * 1000) {
                 this.markForRemoval(item); // expired
               }
               break;
@@ -241,19 +241,19 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
           // If we're on fertile ground, gradually convert to grass
           switch(tileType) {
             case TileType.DIRT:
-              if(sittingTime > 10000) {
+              if(sittingTime > GRASS_SEED_GROW_TIME*1000) {
                 this.setTileType(item.x, item.y, TileType.GRASS);
                 this.markForRemoval(item);
               }
               break;
             case TileType.SAND:
-              if(sittingTime > 5000) {
+              if(sittingTime > GRASS_SEED_DIE_TIME*1000) {
                 this.markForRemoval(item); // expired
               }
               break;
 
             default:
-              if(sittingTime > 300000) {
+              if(sittingTime > GRASS_SEED_EXPIRE_TIME*1000) {
                 this.markForRemoval(item); // expired
               }
               break;
@@ -327,6 +327,22 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
       // Reset movement state
       item.moving = false;
     }
+  },
+
+  calculateScore:function() {
+    var score = 0;
+    for(var x=0; x < this.tilesWide; x++) {
+      for(var y=0; y < this.tilesHigh; y++) {
+        switch(this.getTileType(x,y)) {
+          case TileType.GRASS: score++; break;
+          case TileType.DEEP_GRASS: score += 2; break;
+          case TileType.DIRT: score += 0.25; break;
+        }
+      }
+    }
+    score += this.critters.length;
+    score += this.trees.length;
+    return Math.round(score);
   }
 
 });

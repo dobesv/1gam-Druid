@@ -50,6 +50,7 @@ GameScene = pc.Scene.extend('GameScene',
 
         this.addLayer(this.bgLayer = new ImageLayer('bg', 'background', 0));
         this.addLayer(this.mapLayer = new MapLayer(10));
+        this.addLayer(this.hudLayer = new HudLayer('hud', 20));
         this.mapLayer.center();
         this.map = this.mapLayer.tileMap;
       },

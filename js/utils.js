@@ -114,3 +114,13 @@ function setBoolCookie(name, v) {
 function getBoolCookie(name, defaultValue) {
   return readCookie(name, String(defaultValue)) == 'true';
 }
+
+Object.defineProperty(Object.prototype, 'forEachProperty',
+    { value: function forEachProperty(cb, thisArg) {
+  if(typeof thisArg === 'undefined') thisArg = window;
+  for(var k in this) {
+    if(this.hasOwnProperty(k)) {
+      cb.call(thisArg, k, this[k], this);
+    }
+  }
+}, configurable:true, enumerable:false, writable:true});

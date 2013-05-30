@@ -14,6 +14,8 @@ TheGame = pc.Game.extend('TheGame',
       musicPlaying:true,
       muted:false,
       screenRect:null,
+      timeLimit:60,
+      gameStartTime:0,
 
       onReady:function ()
       {
@@ -39,6 +41,8 @@ TheGame = pc.Game.extend('TheGame',
         };
         // load up resources
         loadImage('bg.jpg');
+        loadImage('start-screen.jpg');
+        loadImage('end-screen.jpg');
         loadImage("spritesheet.png");
         loadImage("iso-128x128.png");
 
@@ -94,14 +98,20 @@ TheGame = pc.Game.extend('TheGame',
         var ctx = pc.device.ctx;
         ctx.clearRect(0, 0, pc.device.canvasWidth, pc.device.canvasHeight);
 
-        // we're ready; make the magic happen
+        this.startMenuScene = new StartMenuScene(this);
+        this.addScene(this.startMenuScene, true);
+
         this.gameScene = new GameScene(this);
-        this.addScene(this.gameScene);
+        this.addScene(this.gameScene, false);
+
+        this.endScene = new EndScene(this);
+        this.addScene(this.endScene, false);
 
 //        if(this.musicPlaying && !this.muted)
 //          this.startMusic();
 
         pc.device.input.bindAction(this, 'cheat', 'F8');
+        pc.device.input.bindAction(this, 'end', 'ESC');
         pc.device.input.bindAction(this, 'toggleMusic', 'M');
 
       },
@@ -148,9 +158,15 @@ TheGame = pc.Game.extend('TheGame',
       },
 
       onAction:function(actionName) {
-        if(actionName == 'cheat') {
-        } else if(actionName == 'toggleMusic') {
-          this.toggleMusic();
+        switch(actionName) {
+          case 'cheat': break;
+          case 'end':
+            if(this.gameScene.active) this.showEndScene();
+            else if(this.endScene.active) this.showStartMenuScene();
+            break;
+          case 'toggleMusic':
+            this.toggleMusic();
+            break;
         }
       },
 
@@ -158,6 +174,23 @@ TheGame = pc.Game.extend('TheGame',
       },
 
       startGame:function() {
+        this.gameStartTime = pc.device.lastFrame;
+        this.gameScene.map.generate();
+        this.deactivateScene(this.startMenuScene);
+        this.deactivateScene(this.endScene);
+        this.activateScene(this.gameScene);
+      },
+
+      showEndScene:function() {
+        this.deactivateScene(this.startMenuScene);
+        this.deactivateScene(this.gameScene);
+        this.activateScene(this.endScene);
+      },
+
+      showStartMenuScene:function() {
+        this.deactivateScene(this.endScene);
+        this.deactivateScene(this.gameScene);
+        this.activateScene(this.startMenuScene);
       },
 
       process:function() {
@@ -182,8 +215,10 @@ TheGame = pc.Game.extend('TheGame',
 
         var ok = this._super();
         if(ok) {
-          if(this.levelStarted && this.gameScene.solved) {
-            this.onLevelComplete();
+          if(this.gameScene && this.gameScene.active) {
+            if(this.getTimeLeft() <= 0) {
+              this.showEndScene();
+            }
           }
         }
 
@@ -218,6 +253,14 @@ TheGame = pc.Game.extend('TheGame',
       canvasY:function(y) {
         return Math.round((y - this.offsetY) / this.scale);
       },
+      /** Convert a scaled canvas coordinate to an unscaled screen coordinate (to match against input events) */
+      screenX:function(x) {
+        return Math.round(x * this.scale + this.offsetX);
+      },
+      /** Convert a scaled canvas coordinate to an unscaled screen coordinate (to match against input events) */
+      screenY:function(y) {
+        return Math.round(y * this.scale + this.offsetY);
+      },
 
       /** Get the current mouse position as a scaled coordinate */
       canvasMouseX:function() {
@@ -240,9 +283,19 @@ TheGame = pc.Game.extend('TheGame',
         }
 
         return this.screenRect;
+      },
+
+      setTimeLimit:function(minutes) {
+        this.timeLimit = minutes * 60000;
+      },
+
+      getTimeLeft:function() {
+        return Math.max(0, (this.gameStartTime + this.timeLimit) - pc.device.lastFrame);
+      },
+
+      calculateScore:function() {
+        return this.gameScene.map.calculateScore();
       }
-
-
 
     });
 

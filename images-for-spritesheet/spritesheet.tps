@@ -149,6 +149,18 @@
             <filename>dung.png</filename>
             <filename>base-tree.png</filename>
             <filename>grazer.png</filename>
+            <filename>seed-grass.png</filename>
+            <filename>clock-#-0.png</filename>
+            <filename>clock-#-1.png</filename>
+            <filename>clock-#-2.png</filename>
+            <filename>clock-#-3.png</filename>
+            <filename>clock-#-4.png</filename>
+            <filename>clock-#-5.png</filename>
+            <filename>clock-#-6.png</filename>
+            <filename>clock-#-7.png</filename>
+            <filename>clock-#-8.png</filename>
+            <filename>clock-#-9.png</filename>
+            <filename>clock-colon.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>
