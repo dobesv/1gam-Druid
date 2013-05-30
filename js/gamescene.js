@@ -53,6 +53,7 @@ GameScene = pc.Scene.extend('GameScene',
         this.addLayer(this.hudLayer = new HudLayer('hud', 20));
         this.mapLayer.center();
         this.map = this.mapLayer.tileMap;
+
       },
 
       process:function() {

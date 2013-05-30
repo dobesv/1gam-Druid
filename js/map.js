@@ -28,7 +28,7 @@ GameMap = pc.TileMap.extend("GameMap", {}, {
     this.spawnGrazer(cx+1.1, cy+1.5);
     this.spawnGrazer(cx+1.2, cy-0.4);
     this.spawnGrazer(cx-0.7, cy+1.2);
-    this.spawnHomeTree(cx,cy);
+    this.spawnHomeTree(cx-0.3333,cy+0.42); // Just hand tuned these numbers, it's not mathematical at all
   },
 
   /**
