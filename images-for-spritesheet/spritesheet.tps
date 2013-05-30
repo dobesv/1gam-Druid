@@ -161,6 +161,24 @@
             <filename>clock-#-8.png</filename>
             <filename>clock-#-9.png</filename>
             <filename>clock-colon.png</filename>
+            <filename>but-play-again-up.png</filename>
+            <filename>but-5min-down.png</filename>
+            <filename>but-5min-hover.png</filename>
+            <filename>but-5min-up.png</filename>
+            <filename>but-10min-down.png</filename>
+            <filename>but-10min-hover.png</filename>
+            <filename>but-10min-up.png</filename>
+            <filename>but-15min-down.png</filename>
+            <filename>but-15min-hover.png</filename>
+            <filename>but-15min-up.png</filename>
+            <filename>but-20min-down.png</filename>
+            <filename>but-20min-hover.png</filename>
+            <filename>but-20min-up.png</filename>
+            <filename>but-60min-down.png</filename>
+            <filename>but-60min-hover.png</filename>
+            <filename>but-60min-up.png</filename>
+            <filename>but-play-again-down.png</filename>
+            <filename>but-play-again-hover.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>
