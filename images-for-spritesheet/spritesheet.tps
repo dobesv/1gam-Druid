@@ -179,6 +179,10 @@
             <filename>but-60min-up.png</filename>
             <filename>but-play-again-down.png</filename>
             <filename>but-play-again-hover.png</filename>
+            <filename>seed-grass-grow.png</filename>
+            <filename>seed-grass-hover.png</filename>
+            <filename>dung-grow.png</filename>
+            <filename>dung-hover.png</filename>
         </array>
         <key>ignoreFileList</key>
         <array/>
